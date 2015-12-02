@@ -17,4 +17,6 @@ executable hvc
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5,
                        cryptohash,
-                       bytestring
+                       bytestring,
+                       text,
+                       directory
