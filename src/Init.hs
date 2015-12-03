@@ -1,7 +1,7 @@
 module Init (initHvc) where
 
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist)
-import System.FilePath ((</>), combine)
+import System.FilePath ((</>))
 import System.IO
 
 import Utils

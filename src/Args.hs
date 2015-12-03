@@ -19,13 +19,13 @@ data HvcOperationType
 strToSimpleOp :: String -> String -> HvcOperationType
 strToSimpleOp "log" dir = Log dir
 strToSimpleOp "init" dir = Init dir
-strToSimpleOp s _ = Help
+strToSimpleOp _ _ = Help
 
 strToCompoundOp :: String -> String -> String -> HvcOperationType
 strToCompoundOp "hash" dir extra = Hash dir extra
 strToCompoundOp "checkout" dir extra = Checkout dir extra
 strToCompoundOp "commit" dir extra = Commit dir extra
-strToCompoundOp s _ _ = Help
+strToCompoundOp _ _ _ = Help
 
 strToOp :: String -> String -> Maybe String -> HvcOperationType
 strToOp command dir (Nothing) = strToSimpleOp command dir
@@ -47,7 +47,7 @@ parseArgs :: [String] -> IO HvcArgsResult
 parseArgs ["help"] = return (HvcOperation Help)
 parseArgs [command, dir] = validateCommand command dir Nothing
 parseArgs [command, dir, extra] = validateCommand command dir (Just extra)
-parseArgs xs = return (HvcOperation Help)
+parseArgs _ = return (HvcOperation Help)
 
 validDir :: FilePath -> IO Bool
 validDir fp = do

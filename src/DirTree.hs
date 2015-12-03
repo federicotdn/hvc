@@ -5,14 +5,15 @@ module DirTree
        ,pathsFromTree
        ,filesFromTree) where
 
+import Data.List (sort)
 import System.Directory (getDirectoryContents, doesDirectoryExist)
-import System.FilePath ((</>), combine, normalise, makeRelative)
+import System.FilePath ((</>), normalise, makeRelative)
 import Control.Monad (forM)
 
 data DirTree = DirNode FilePath [DirTree] | FileNode FilePath deriving (Show)
 
 foldDirTree :: (FilePath -> c -> b) -> ([b] -> c) -> (FilePath -> b) -> DirTree -> b
-foldDirTree g k f (FileNode path) = f path
+foldDirTree _g _k f (FileNode path) = f path
 foldDirTree g k f (DirNode path dts) = g path (k (map (foldDirTree g k f) dts))
 
 pathsFromTree :: DirTree -> [FilePath]
@@ -25,7 +26,7 @@ makeTreeRelative path =
               (FileNode . (makeRelative path))
 
 filesFromTree :: DirTree -> [FilePath]
-filesFromTree = foldDirTree (\x y -> y) concat (:[])
+filesFromTree = foldDirTree (\_ y -> y) concat (:[])
 
 -- TODO: ignore files based on extension
 ignoredPath :: FilePath -> Bool
@@ -40,7 +41,8 @@ treeFromDirAbs :: FilePath -> IO DirTree
 treeFromDirAbs dir = do
   let normDir = normalise dir
   contents <- getDirectoryContents normDir
-  nodes <- forM (filter (not . ignoredPath) contents) $ \name -> do
+  let filteredContents = filter (not . ignoredPath) contents
+  nodes <- forM (sort filteredContents) $ \name -> do
     let path = normDir </> name
     isDir <- doesDirectoryExist path
     if isDir

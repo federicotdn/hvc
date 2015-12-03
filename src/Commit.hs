@@ -1,12 +1,13 @@
 module Commit (commitHvc) where
 
-import Data.List
 import qualified Data.ByteString.Lazy as Lazy
 import qualified Data.ByteString as Strict
-import Control.Monad (forM)
+import Control.Monad (forM, forM_)
 import Codec.Compression.GZip
-import System.FilePath (combine, (</>))
+import System.FilePath ((</>))
 import System.Directory (doesFileExist)
+import System.IO (withFile, hPutStrLn, IOMode(..))
+import Data.Time (getCurrentTime)
 
 import DirTree
 import Utils
@@ -29,7 +30,7 @@ storeObject obj dest = do
 
 storeObjects :: FilePath -> [FilePath] -> IO [Strict.ByteString]
 storeObjects base obs = do
-  forM (sort obs) $ \file -> do
+  forM obs $ \file -> do
     let filename = base </> file
     storeObject filename (hvcDir base </> "objects")
 
@@ -38,9 +39,24 @@ commitHashFrom fileHashes = bstrToHex $ bstrSHA1 (foldr Strict.append Strict.emp
   where pairHashes = map (\(file, hash) -> bstrSHA1 $ Strict.append (strSHA1 file) hash)
                          fileHashes
 
-storeCommit :: FilePath -> [(String, Strict.ByteString)] -> IO String 
-storeCommit base fileHashes = do
-  return $ commitHashFrom fileHashes -- TODO: write commit data in commits dir, update HEAD
+storeCommitHead :: FilePath -> String -> IO ()
+storeCommitHead base hash = do
+  withFile (hvcDir base </> "HEAD") WriteMode (\file -> hPutStrLn file hash)
+
+storeCommitData :: FilePath -> String -> String -> [(String, Strict.ByteString)] -> IO ()
+storeCommitData base msg hash fileHashes = do
+  withFile (hvcDir base </> "commits" </> hash) WriteMode $ \file -> do
+    date <- getCurrentTime
+    hPutStrLn file (show $ CommitSummary msg (show date))
+    forM_ fileHashes $ \(filename, filehash) -> do
+      hPutStrLn file (show $ CommitLine filename (bstrToHex filehash))
+
+storeCommit :: FilePath -> String -> [(String, Strict.ByteString)] -> IO String 
+storeCommit base msg fileHashes = do
+  let commitHash = commitHashFrom fileHashes
+  storeCommitHead base commitHash
+  storeCommitData base msg commitHash fileHashes
+  return commitHash
 
 execCommit :: FilePath -> String -> IO ()
 execCommit dir msg = do
@@ -50,7 +66,8 @@ execCommit dir msg = do
     then putStrLn "Commit: no files to commit."
     else do
       hashes <- storeObjects dir files
-      commitHash <- storeCommit dir (zip files hashes)
+      commitHash <- storeCommit dir msg (zip files hashes)
+      putStrLn $ "Commit successful."
       putStrLn $ "Commit hash: " ++ commitHash
 
 commitHvc :: FilePath -> String -> IO ()
