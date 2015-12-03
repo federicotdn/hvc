@@ -40,7 +40,7 @@ storeCommitData :: FilePath -> String -> String -> [(String, Strict.ByteString)]
 storeCommitData base msg hash fileHashes = do
   withFile (commitsDir base </> hash) WriteMode $ \file -> do
     date <- getCurrentTime
-    hPutStrLn file (show $ CommitSummary msg (show date))
+    hPutStrLn file (show $ CommitSummary msg (show date) hash)
     forM_ fileHashes $ \(filename, filehash) -> do
       hPutStrLn file (show $ CommitLine filename (bstrToHex filehash))
 
@@ -64,9 +64,5 @@ execCommit dir msg = do
       putStrLn $ "Commit hash: " ++ commitHash
 
 commitHvc :: FilePath -> String -> IO ()
-commitHvc dir msg = do
-  hvcEnabled <- hasHvcDir dir
-  if hvcEnabled
-    then execCommit dir msg
-    else printHvcDirError
+commitHvc dir msg = execIfHvc dir (execCommit dir msg)
 

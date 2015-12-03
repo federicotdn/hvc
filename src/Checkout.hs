@@ -46,8 +46,4 @@ execCheckout dir hash = do
 
 
 checkoutHvc :: FilePath -> String -> IO ()
-checkoutHvc dir hash = do
-  hvcEnabled <- hasHvcDir dir
-  if hvcEnabled 
-    then execCheckout dir hash
-    else printHvcDirError
+checkoutHvc dir hash = execIfHvc dir (execCheckout dir hash)

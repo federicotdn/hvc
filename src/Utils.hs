@@ -1,11 +1,11 @@
 module Utils
-       (hasHvcDir
-       ,hvcDir
+       (hvcDir
        ,commitsDir
        ,objectsDir
        ,headPath
        ,printHvcDirError
        ,storeCommitHead
+       ,execIfHvc
        ,CommitLine(..)
        ,CommitSummary(..)) where
 
@@ -15,7 +15,7 @@ import Control.Monad (forM)
 import System.IO (withFile, hPutStrLn, IOMode(..))
 
 data CommitLine = CommitLine String String deriving (Show, Read)
-data CommitSummary = CommitSummary String String deriving (Show, Read)
+data CommitSummary = CommitSummary String String String deriving (Show, Read)
 
 hvcDir :: FilePath -> FilePath
 hvcDir dir = combine dir ".hvc"
@@ -42,3 +42,10 @@ hasHvcDir dir = do
   dirsExist <- forM dirList doesDirectoryExist
   headExists <- doesFileExist $ hvcDir dir </> "HEAD"
   return (and $ headExists : dirsExist)
+
+execIfHvc :: FilePath -> IO () -> IO ()
+execIfHvc dir comp = do
+  hvcEnabled <- hasHvcDir dir
+  if hvcEnabled
+    then comp
+    else printHvcDirError

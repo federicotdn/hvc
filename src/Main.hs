@@ -8,6 +8,7 @@ import Init
 import Commit
 import Checkout
 import Hash
+import Log
 
 main :: IO ()
 main = do
@@ -22,10 +23,13 @@ runAction (HvcOperation op) = runOperation op
 runOperation :: HvcOperationType -> IO ()
 runOperation (Init dir) = initHvc dir
 runOperation (Commit dir msg) = commitHvc dir msg
-runOperation (Help) = putStrLn "help" -- testing
-runOperation (Log dir) = putStrLn "log" -- testing
+runOperation (Help) = printHelp
+runOperation (Log dir) = logHvc dir
 runOperation (Checkout dir commit) = checkoutHvc dir commit
 runOperation (Hash dir file) = (fileSHA1 $ dir </> file) >>= (putStrLn . bstrToHex)
 
 printError :: HvcErrorType -> IO ()
 printError (DirError dir) = putStrLn $ "Invalid directory: " ++ dir
+
+printHelp :: IO ()
+printHelp = putStrLn "help"

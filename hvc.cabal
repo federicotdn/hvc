@@ -21,6 +21,7 @@ executable hvc
                        Commit,
                        DirTree,
                        Checkout,
+                       Log,
                        Hash,
                        Utils
   build-depends:       base >= 4.7 && < 5,
