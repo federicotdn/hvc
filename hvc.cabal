@@ -3,7 +3,7 @@ version:             0.1.0.0
 synopsis:            hvc
 description:         Please see README.md
 homepage:            http://github.com/federicotdn/hvc
-license:             BSD3
+license:             GPL-3
 license-file:        LICENSE
 author:              Federico Tedin
 copyright:           2010 Federico Tedin
@@ -15,8 +15,17 @@ executable hvc
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
+  other-modules:       Args,
+                       Init,
+                       Commit,
+                       DirTree,
+                       Hash,
+                       Utils
   build-depends:       base >= 4.7 && < 5,
                        cryptohash,
                        bytestring,
                        text,
-                       directory
+                       directory,
+                       filepath,
+                       directory-tree,
+                       zlib

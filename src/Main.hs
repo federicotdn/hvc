@@ -1,13 +1,12 @@
 module Main where
 
 import System.Environment
-import System.Exit
-import System.IO
-import qualified Crypto.Hash.SHA1 as SHA1
-import qualified Data.ByteString as Strict
-import qualified Data.ByteString.Lazy as Lazy
-import Text.Printf (printf)
+import System.FilePath ((</>))
+
 import Args
+import Init
+import Commit
+import Hash
 
 main :: IO ()
 main = do
@@ -15,20 +14,17 @@ main = do
   action <- parseArgs args
   runAction action
 
-bstrToHex :: Strict.ByteString -> String
-bstrToHex bytes = concat $ map (printf "%02x") (Strict.unpack bytes)
-
 runAction :: HvcArgsResult -> IO()
 runAction (HvcError e) = printError e
 runAction (HvcOperation op) = runOperation op
 
 runOperation :: HvcOperationType -> IO ()
-runOperation (Init dir) = putStrLn $ "init dir" ++ dir
-runOperation (Commit dir) = putStrLn $ "commit dir" ++ dir
-runOperation (Help) = putStrLn "help"
-runOperation (Hash dir file) = do
-  contents <- Lazy.readFile file
-  putStrLn $ bstrToHex (SHA1.hashlazy contents)
+runOperation (Init dir) = initHvc dir
+runOperation (Commit dir msg) = commitHvc dir msg
+runOperation (Help) = putStrLn "help" -- testing
+runOperation (Log dir) = putStrLn "log" -- testing
+runOperation (Checkout dir commit) = putStrLn $ bstrToHex $ strSHA1 commit -- testing
+runOperation (Hash dir file) = (fileSHA1 $ dir </> file) >>= (putStrLn . bstrToHex)
 
 printError :: HvcErrorType -> IO ()
 printError (DirError dir) = putStrLn $ "Invalid directory: " ++ dir
