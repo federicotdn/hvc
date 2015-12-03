@@ -1,17 +1,40 @@
 module Utils
        (hasHvcDir
        ,hvcDir
-       ,printHvcDirError) where
+       ,commitsDir
+       ,objectsDir
+       ,headPath
+       ,printHvcDirError
+       ,storeCommitHead
+       ,CommitLine(..)
+       ,CommitSummary(..)) where
 
 import System.FilePath (combine, (</>))
 import System.Directory (doesDirectoryExist, doesFileExist)
 import Control.Monad (forM)
+import System.IO (withFile, hPutStrLn, IOMode(..))
+
+data CommitLine = CommitLine String String deriving (Show, Read)
+data CommitSummary = CommitSummary String String deriving (Show, Read)
 
 hvcDir :: FilePath -> FilePath
 hvcDir dir = combine dir ".hvc"
 
+commitsDir :: FilePath -> FilePath
+commitsDir dir = hvcDir dir </> "commits"
+
+objectsDir :: FilePath -> FilePath
+objectsDir dir = hvcDir dir </> "objects"
+
+headPath :: FilePath -> FilePath
+headPath dir = hvcDir dir </> "HEAD"
+
+storeCommitHead :: FilePath -> String -> IO ()
+storeCommitHead base hash = do
+  withFile (headPath base) WriteMode (\file -> hPutStrLn file hash)
+
 printHvcDirError :: IO ()
-printHvcDirError = putStrLn "Unable to perform operation: HVC directory (.hvc) not found."
+printHvcDirError = putStrLn "Unable to perform operation: hvc directory (.hvc) not found."
 
 hasHvcDir :: FilePath -> IO Bool
 hasHvcDir dir = do

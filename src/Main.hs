@@ -6,6 +6,7 @@ import System.FilePath ((</>))
 import Args
 import Init
 import Commit
+import Checkout
 import Hash
 
 main :: IO ()
@@ -23,7 +24,7 @@ runOperation (Init dir) = initHvc dir
 runOperation (Commit dir msg) = commitHvc dir msg
 runOperation (Help) = putStrLn "help" -- testing
 runOperation (Log dir) = putStrLn "log" -- testing
-runOperation (Checkout dir commit) = putStrLn $ bstrToHex $ strSHA1 commit -- testing
+runOperation (Checkout dir commit) = checkoutHvc dir commit
 runOperation (Hash dir file) = (fileSHA1 $ dir </> file) >>= (putStrLn . bstrToHex)
 
 printError :: HvcErrorType -> IO ()

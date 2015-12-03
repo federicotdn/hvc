@@ -13,9 +13,6 @@ import DirTree
 import Utils
 import Hash
 
-data CommitLine = CommitLine String String deriving (Show, Read)
-data CommitSummary = CommitSummary String String deriving (Show, Read)
-
 storeObject :: FilePath -> FilePath -> IO Strict.ByteString
 storeObject obj dest = do
   contents <- Lazy.readFile obj
@@ -32,20 +29,16 @@ storeObjects :: FilePath -> [FilePath] -> IO [Strict.ByteString]
 storeObjects base obs = do
   forM obs $ \file -> do
     let filename = base </> file
-    storeObject filename (hvcDir base </> "objects")
+    storeObject filename (objectsDir base)
 
 commitHashFrom :: [(String, Strict.ByteString)] -> String 
 commitHashFrom fileHashes = bstrToHex $ bstrSHA1 (foldr Strict.append Strict.empty pairHashes)
   where pairHashes = map (\(file, hash) -> bstrSHA1 $ Strict.append (strSHA1 file) hash)
                          fileHashes
 
-storeCommitHead :: FilePath -> String -> IO ()
-storeCommitHead base hash = do
-  withFile (hvcDir base </> "HEAD") WriteMode (\file -> hPutStrLn file hash)
-
 storeCommitData :: FilePath -> String -> String -> [(String, Strict.ByteString)] -> IO ()
 storeCommitData base msg hash fileHashes = do
-  withFile (hvcDir base </> "commits" </> hash) WriteMode $ \file -> do
+  withFile (commitsDir base </> hash) WriteMode $ \file -> do
     date <- getCurrentTime
     hPutStrLn file (show $ CommitSummary msg (show date))
     forM_ fileHashes $ \(filename, filehash) -> do
