@@ -8,11 +8,10 @@ import System.Directory
 
 data HvcArgsResult = HvcError HvcErrorType | HvcOperation HvcOperationType
 data HvcErrorType = DirError String
-data HvcOperationType 
-  = Init String 
-  | Commit String String 
-  | Help 
-  | Hash String String 
+data HvcOperationType
+  = Init String
+  | Commit String String
+  | Help
   | Checkout String String
   | Log String
 
@@ -22,7 +21,6 @@ strToSimpleOp "init" dir = Init dir
 strToSimpleOp _ _ = Help
 
 strToCompoundOp :: String -> String -> String -> HvcOperationType
-strToCompoundOp "hash" dir extra = Hash dir extra
 strToCompoundOp "checkout" dir extra = Checkout dir extra
 strToCompoundOp "commit" dir extra = Commit dir extra
 strToCompoundOp _ _ _ = Help
@@ -45,8 +43,8 @@ validateCommand command dir extra =
 
 parseArgs :: [String] -> IO HvcArgsResult
 parseArgs ["help"] = return (HvcOperation Help)
-parseArgs [command, dir] = validateCommand command dir Nothing
-parseArgs [command, dir, extra] = validateCommand command dir (Just extra)
+parseArgs [dir, command] = validateCommand command dir Nothing
+parseArgs [dir, command, extra] = validateCommand command dir (Just extra)
 parseArgs _ = return (HvcOperation Help)
 
 validDir :: FilePath -> IO Bool

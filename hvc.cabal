@@ -1,13 +1,13 @@
 name:                hvc
 version:             0.1.0.0
-synopsis:            hvc
+synopsis:            Basic version control system
 description:         Please see README.md
 homepage:            http://github.com/federicotdn/hvc
 license:             GPL-3
 license-file:        LICENSE
 author:              Federico Tedin
-copyright:           2010 Federico Tedin
-category:            VCS
+copyright:           2015 Federico Tedin
+category:            Development
 build-type:          Simple
 cabal-version:       >=1.10
 
