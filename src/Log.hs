@@ -5,6 +5,7 @@ import System.Directory (getDirectoryContents)
 import Control.Monad (forM)
 import System.FilePath (combine)
 import Data.List
+import Data.Time.Clock (UTCTime)
 
 import Utils
 
@@ -22,19 +23,16 @@ getCommitPaths dir = do
 loadSortedCommits :: [FilePath] -> IO [CommitSummary]
 loadSortedCommits paths = do
   summaries <- forM paths loadCommitSummary
-  return $ sortOn (\(CommitSummary _ date _) -> date) summaries
+  return $ reverse $ sortOn (\(CommitSummary _ date _) -> read date :: UTCTime) summaries
 
 execLog :: FilePath -> IO ()
 execLog dir = do
-  putStrLn "get commit paths"
   paths <- getCommitPaths dir
-  putStrLn "load sorted"
   sortedCommits <- loadSortedCommits paths
-  putStrLn "afterload sorted"
   summaries <- forM sortedCommits $ \(CommitSummary msg date hash) -> do
     putStrLn $ "commit " ++ hash
-    putStrLn $ "--> date: " ++ (show date)
-    putStrLn $ "--> message: " ++ msg
+    putStrLn $ ">>= date: " ++ date
+    putStrLn $ ">>= message: " ++ msg
     putStrLn ""
   if length summaries == 0
     then putStrLn "Log: no commits to show."

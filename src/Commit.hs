@@ -40,7 +40,7 @@ storeCommitData :: FilePath -> String -> String -> [(String, Strict.ByteString)]
 storeCommitData base msg hash fileHashes = do
   withFile (commitsDir base </> hash) WriteMode $ \file -> do
     date <- getCurrentTime
-    hPutStrLn file (show $ CommitSummary msg date hash)
+    hPutStrLn file (show $ CommitSummary msg (show date) hash)
     forM_ fileHashes $ \(filename, filehash) -> do
       hPutStrLn file (show $ CommitLine filename (bstrToHex filehash))
 

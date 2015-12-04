@@ -16,7 +16,7 @@ import System.IO (withFile, hPutStrLn, IOMode(..))
 import Data.Time
 
 data CommitLine = CommitLine String String deriving (Show, Read)
-data CommitSummary = CommitSummary String UTCTime String deriving (Show, Read)
+data CommitSummary = CommitSummary String String String deriving (Show, Read)
 
 hvcDir :: FilePath -> FilePath
 hvcDir dir = combine dir ".hvc"
