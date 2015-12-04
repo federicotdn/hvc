@@ -31,7 +31,7 @@ storeObjects base obs = do
     let filename = base </> file
     storeObject filename (objectsDir base)
 
-commitHashFrom :: [(String, Strict.ByteString)] -> String 
+commitHashFrom :: [(String, Strict.ByteString)] -> String
 commitHashFrom fileHashes = bstrToHex $ bstrSHA1 (foldr Strict.append Strict.empty pairHashes)
   where pairHashes = map (\(file, hash) -> bstrSHA1 $ Strict.append (strSHA1 file) hash)
                          fileHashes
@@ -40,11 +40,11 @@ storeCommitData :: FilePath -> String -> String -> [(String, Strict.ByteString)]
 storeCommitData base msg hash fileHashes = do
   withFile (commitsDir base </> hash) WriteMode $ \file -> do
     date <- getCurrentTime
-    hPutStrLn file (show $ CommitSummary msg (show date) hash)
+    hPutStrLn file (show $ CommitSummary msg date hash)
     forM_ fileHashes $ \(filename, filehash) -> do
       hPutStrLn file (show $ CommitLine filename (bstrToHex filehash))
 
-storeCommit :: FilePath -> String -> [(String, Strict.ByteString)] -> IO String 
+storeCommit :: FilePath -> String -> [(String, Strict.ByteString)] -> IO String
 storeCommit base msg fileHashes = do
   let commitHash = commitHashFrom fileHashes
   storeCommitHead base commitHash

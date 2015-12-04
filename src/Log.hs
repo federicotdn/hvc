@@ -3,7 +3,8 @@ module Log (logHvc) where
 import System.IO (withFile, hGetLine, IOMode(..))
 import System.Directory (getDirectoryContents)
 import Control.Monad (forM)
-import System.FilePath (combine, (</>))
+import System.FilePath (combine)
+import Data.List
 
 import Utils
 
@@ -16,15 +17,28 @@ getCommitPaths :: FilePath -> IO [FilePath]
 getCommitPaths dir = do
   let commitDir = commitsDir dir
   commits <- getDirectoryContents commitDir
-  return $ map (combine commitDir) $ filter (`notElem` [".", ".."]) commits 
+  return $ map (combine commitDir) $ filter (`notElem` [".", ".."]) commits
+
+loadSortedCommits :: [FilePath] -> IO [CommitSummary]
+loadSortedCommits paths = do
+  summaries <- forM paths loadCommitSummary
+  return $ sortOn (\(CommitSummary _ date _) -> date) summaries
 
 execLog :: FilePath -> IO ()
 execLog dir = do
-  summaries <- forM (getCommitPaths dir) $ \path -> do
-    (CommitSummary msg date hash) <- loadCommitSummary path
+  putStrLn "get commit paths"
+  paths <- getCommitPaths dir
+  putStrLn "load sorted"
+  sortedCommits <- loadSortedCommits paths
+  putStrLn "afterload sorted"
+  summaries <- forM sortedCommits $ \(CommitSummary msg date hash) -> do
+    putStrLn $ "commit " ++ hash
+    putStrLn $ "--> date: " ++ (show date)
+    putStrLn $ "--> message: " ++ msg
     putStrLn ""
-    return "asdf"
-  return ()
+  if length summaries == 0
+    then putStrLn "Log: no commits to show."
+    else return ()
 
 logHvc :: FilePath -> IO ()
 logHvc dir = execIfHvc dir (execLog dir)
