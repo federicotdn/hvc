@@ -13,17 +13,27 @@ import DirTree
 import Utils
 import Hash
 
-storeObject :: FilePath -> FilePath -> IO Strict.ByteString
-storeObject obj dest = do
-  contents <- Lazy.readFile obj
-  let hashRaw = lbstrSHA1 contents
-  let finalName = dest </> (bstrToHex hashRaw)
+storeObject :: FilePath -> String -> Lazy.ByteString -> IO ()
+storeObject dest hash contents = do
+  let finalName = dest </> hash
   exists <- doesFileExist finalName
   if exists
-    then return hashRaw
-    else do
-      Lazy.writeFile finalName (compress contents)
-      return hashRaw
+    then return ()
+    else Lazy.writeFile finalName (compress contents)
+
+hashedFile :: FilePath -> IO (String, Lazy.ByteString)
+hashedFile path = do
+  contents <- Lazy.readFile path
+  let hash = bstrToHex $ lbstrSHA1 contents
+  return (hash, contents)
+
+loadTreeFiles :: DirTree () -> DirTree (IO (String, Lazy.ByteString))
+loadTreeFiles = mapDirTree id $ \path _ -> (path, hashedFile path)
+
+storeTreeFiles :: FilePath -> DirTree (IO (String, Lazy.ByteString)) -> IO ()
+storeTreeFiles dest tree = do
+  let storedTree = mapDirTree id (\p (hash, contents) -> (p, storeObject dest hash contents)) tree
+  return $ foldr (>>) (return ()) (dirTreeExtraList storedTree)
 
 storeObjects :: FilePath -> [FilePath] -> IO [Strict.ByteString]
 storeObjects base obs = do
@@ -54,14 +64,14 @@ storeCommit base msg fileHashes = do
 execCommit :: FilePath -> String -> IO ()
 execCommit dir msg = do
   tree <- treeFromDir dir
-  let files = filesFromTree tree
-  if length files == 0
+  if isEmpty tree
     then putStrLn "Commit: no files to commit."
-    else do
-      hashes <- storeObjects dir files
-      commitHash <- storeCommit dir msg (zip files hashes)
-      putStrLn $ "Commit successful."
-      putStrLn $ "Commit hash: " ++ commitHash
+    else putStrLn ""
+      --loadedTree <- loadTreeFiles tree
+
+     -- commitHash <- storeCommit dir msg (zip files hashes)
+      --putStrLn $ "Commit successful."
+     -- putStrLn $ "Commit hash: " ++ commitHash
 
 commitHvc :: FilePath -> String -> IO ()
 commitHvc dir msg = execIfHvc dir (execCommit dir msg)
