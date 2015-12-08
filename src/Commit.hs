@@ -1,65 +1,53 @@
 module Commit (commitHvc) where
 
 import qualified Data.ByteString.Lazy as Lazy
-import qualified Data.ByteString as Strict
-import Control.Monad (forM, forM_)
+import Control.Monad (forM_)
 import Codec.Compression.GZip
 import System.FilePath ((</>))
 import System.Directory (doesFileExist)
 import System.IO (withFile, hPutStrLn, IOMode(..))
 import Data.Time (getCurrentTime)
 
+import DirTreeUtils
 import DirTree
 import Utils
-import Hash
 
-storeObject :: FilePath -> FilePath -> IO Strict.ByteString
-storeObject obj dest = do
-  contents <- Lazy.readFile obj
-  let hashRaw = lbstrSHA1 contents
-  let finalName = dest </> (bstrToHex hashRaw)
+storeObject :: FilePath -> HashContents -> IO ()
+storeObject dest hc = do
+  let finalName = dest </> (hcHash hc)
   exists <- doesFileExist finalName
   if exists
-    then return hashRaw
-    else do
-      Lazy.writeFile finalName (compress contents)
-      return hashRaw
+    then return ()
+    else Lazy.writeFile finalName (compress $ hcContents hc)
 
-storeObjects :: FilePath -> [FilePath] -> IO [Strict.ByteString]
+storeObjects :: FilePath -> [HashContents] -> IO ()
 storeObjects base obs = do
-  forM obs $ \file -> do
-    let filename = base </> file
-    storeObject filename (objectsDir base)
+  forM_ obs $ \hc -> storeObject (objectsDir base) hc
 
-commitHashFrom :: [(String, Strict.ByteString)] -> String
-commitHashFrom fileHashes = bstrToHex $ bstrSHA1 (foldr Strict.append Strict.empty pairHashes)
-  where pairHashes = map (\(file, hash) -> bstrSHA1 $ Strict.append (strSHA1 file) hash)
-                         fileHashes
-
-storeCommitData :: FilePath -> String -> String -> [(String, Strict.ByteString)] -> IO ()
-storeCommitData base msg hash fileHashes = do
+storeCommitData :: FilePath -> String -> String -> DirTree String -> IO ()
+storeCommitData base msg hash hashesTree = do
   withFile (commitsDir base </> hash) WriteMode $ \file -> do
     date <- getCurrentTime
     hPutStrLn file (show $ CommitSummary msg (show date) hash)
-    forM_ fileHashes $ \(filename, filehash) -> do
-      hPutStrLn file (show $ CommitLine filename (bstrToHex filehash))
+    hPutStrLn file (show hashesTree)
 
-storeCommit :: FilePath -> String -> [(String, Strict.ByteString)] -> IO String
-storeCommit base msg fileHashes = do
-  let commitHash = commitHashFrom fileHashes
+storeCommit :: FilePath -> String -> DirTree HashContents -> IO String
+storeCommit base msg tree = do
+  let hashesTree = removeByteStrings tree
+  let commitHash = treeHash hashesTree
   storeCommitHead base commitHash
-  storeCommitData base msg commitHash fileHashes
+  storeCommitData base msg commitHash hashesTree
   return commitHash
 
 execCommit :: FilePath -> String -> IO ()
 execCommit dir msg = do
   tree <- treeFromDir dir
-  let files = filesFromTree tree
-  if length files == 0
+  let hashContents = extrasFromTree tree
+  if length hashContents == 0
     then putStrLn "Commit: no files to commit."
     else do
-      hashes <- storeObjects dir files
-      commitHash <- storeCommit dir msg (zip files hashes)
+      storeObjects dir hashContents
+      commitHash <- storeCommit dir msg tree
       putStrLn $ "Commit successful."
       putStrLn $ "Commit hash: " ++ commitHash
 

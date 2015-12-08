@@ -5,8 +5,9 @@ import System.Environment
 import Args
 import Init
 import Commit
-import Checkout
 import Log
+import Checkout
+import Status
 
 main :: IO ()
 main = do
@@ -21,9 +22,10 @@ runAction (HvcOperation op) = runOperation op
 runOperation :: HvcOperationType -> IO ()
 runOperation (Init dir) = initHvc dir
 runOperation (Commit dir msg) = commitHvc dir msg
-runOperation (Help) = printHelp
 runOperation (Log dir) = logHvc dir
 runOperation (Checkout dir commit) = checkoutHvc dir commit
+runOperation (Status dir) = statusHvc dir
+runOperation (Help) = printHelp
 
 printError :: HvcErrorType -> IO ()
 printError (DirError dir) = putStrLn $ "Invalid directory: " ++ dir

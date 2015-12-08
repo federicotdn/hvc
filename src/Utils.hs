@@ -5,17 +5,18 @@ module Utils
        ,headPath
        ,printHvcDirError
        ,storeCommitHead
+       ,readCommitHead
        ,execIfHvc
-       ,CommitLine(..)
+       ,loadCommit
        ,CommitSummary(..)) where
 
 import System.FilePath (combine, (</>))
 import System.Directory (doesDirectoryExist, doesFileExist)
 import Control.Monad (forM)
-import System.IO (withFile, hPutStrLn, IOMode(..))
-import Data.Time
+import System.IO (withFile, hPutStrLn, hGetLine,IOMode(..))
 
-data CommitLine = CommitLine String String deriving (Show, Read)
+import DirTree
+
 data CommitSummary = CommitSummary String String String deriving (Show, Read)
 
 hvcDir :: FilePath -> FilePath
@@ -33,6 +34,16 @@ headPath dir = hvcDir dir </> "HEAD"
 storeCommitHead :: FilePath -> String -> IO ()
 storeCommitHead base hash = do
   withFile (headPath base) WriteMode (\file -> hPutStrLn file hash)
+
+readCommitHead :: FilePath -> IO String
+readCommitHead base = do
+  withFile (headPath base) ReadMode (\file -> hGetLine file)
+
+loadCommit :: FilePath -> IO (DirTree String)
+loadCommit path = do
+  contents <- readFile path
+  let line = (lines contents)!!1
+  return $ read line
 
 printHvcDirError :: IO ()
 printHvcDirError = putStrLn "Unable to perform operation: hvc directory (.hvc) not found."

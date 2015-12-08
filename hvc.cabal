@@ -22,8 +22,10 @@ executable hvc
                        DirTree,
                        Checkout,
                        Log,
+                       Status,
                        Hash,
-                       Utils
+                       Utils,
+                       DirTreeUtils
   build-depends:       base >= 4.7 && < 5,
                        cryptohash,
                        bytestring,
@@ -32,4 +34,5 @@ executable hvc
                        filepath,
                        directory-tree,
                        zlib,
+                       containers,
                        time

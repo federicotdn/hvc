@@ -14,10 +14,12 @@ data HvcOperationType
   | Help
   | Checkout String String
   | Log String
+  | Status String
 
 strToSimpleOp :: String -> String -> HvcOperationType
 strToSimpleOp "log" dir = Log dir
 strToSimpleOp "init" dir = Init dir
+strToSimpleOp "status" dir = Status dir
 strToSimpleOp _ _ = Help
 
 strToCompoundOp :: String -> String -> String -> HvcOperationType

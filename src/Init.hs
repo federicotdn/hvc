@@ -12,5 +12,5 @@ initHvc dir = do
     else do
       createDirectoryIfMissing True $ objectsDir dir
       createDirectoryIfMissing True $ commitsDir dir
-      writeFile (headPath dir) ""
+      writeFile (headPath dir) "\n"
       putStrLn $ "Init: directory " ++ dir ++ " initialized."
