@@ -21,4 +21,5 @@ Valid commands are:
 - `commit`: stores all of the project's files in a commit, identified by a unique hash and a message, which must be passed as an additional argument.
 - `checkout`: restores the project directory to the state it was on a given commit.  A valid commit hash must be specified as an additional argument.
 - `log`: lists all commits in chronological order, showing hash, date and message for each one of them.
-- `help`: displays help on how to use each command.
+- `status`: prints the current commit hash, and lists any new, deleted or modified files.
+- `help`: displays help on how to operate `hvc`.

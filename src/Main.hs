@@ -31,4 +31,7 @@ printError :: HvcErrorType -> IO ()
 printError (DirError dir) = putStrLn $ "Invalid directory: " ++ dir
 
 printHelp :: IO ()
-printHelp = putStrLn "help"
+printHelp = do
+  putStrLn "Usage: hvc <directory> <operation> [options]"
+  putStrLn "Valid operations are: init, commit, checkout, log, status, help"
+  putStrLn "See README.md for more details."
