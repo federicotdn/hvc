@@ -2,7 +2,7 @@ module Log (logHvc) where
 
 import System.IO (withFile, hGetLine, IOMode(..))
 import System.Directory (getDirectoryContents)
-import Control.Monad (forM)
+import Control.Monad (forM, forM_)
 import System.FilePath (combine)
 import Data.List
 import Data.Time.Clock (UTCTime)
@@ -29,14 +29,11 @@ execLog :: FilePath -> IO ()
 execLog dir = do
   paths <- getCommitPaths dir
   sortedCommits <- loadSortedCommits paths
-  summaries <- forM sortedCommits $ \(CommitSummary msg date hash) -> do
+  forM_ sortedCommits $ \(CommitSummary msg date hash) -> do
     putStrLn $ "commit " ++ hash
     putStrLn $ ">>= date: " ++ date
     putStrLn $ ">>= message: " ++ msg
     putStrLn ""
-  if length summaries == 0
-    then putStrLn "Log: no commits to show."
-    else return ()
 
 logHvc :: FilePath -> IO ()
 logHvc dir = execIfHvc dir (execLog dir)

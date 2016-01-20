@@ -1,4 +1,4 @@
-module Commit (commitHvc) where
+module Commit (commitHvc, storeCommit) where
 
 import qualified Data.ByteString.Lazy as Lazy
 import Control.Monad (forM_)

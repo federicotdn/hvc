@@ -33,15 +33,13 @@ execStatus dir = do
   currentTree <- treeFromDir dir
   commitHead <- readCommitHead dir
   let currentTreeHashes = removeByteStrings currentTree
-  if length commitHead == 0
-    then do
-      putStrLn "Status: HEAD is blank (no commits have been made)."
-      putStr $ unlines (compareTrees currentTreeHashes emptyTreeDir)
-    else do
-      putStrLn $ "Status: commit HEAD is: " ++ commitHead
-      let commitPath = commitsDir dir </> commitHead
-      commitedTree <- loadCommit commitPath
-      putStr $ unlines (compareTrees currentTreeHashes commitedTree)
+  putStrLn $ "Status: commit HEAD is: " ++ commitHead
+  let commitPath = commitsDir dir </> commitHead
+  commitedTree <- loadCommit commitPath
+  let cmpLines = compareTrees currentTreeHashes commitedTree
+  putStrLn $ if length cmpLines > 0 
+    then unlines cmpLines
+    else "No changes have been made since last commit."
 
 statusHvc :: FilePath -> IO ()
 statusHvc dir = execIfHvc dir (execStatus dir)

@@ -1,6 +1,7 @@
 module DirTreeUtils 
        (treeFromDir
        ,emptyTreeDir
+       ,hcEmptyTreeDir
        ,extrasFromTree
        ,pathExtrasFromTree
        ,treeHash
@@ -81,3 +82,6 @@ treeFromDirAbs dir = do
 
 emptyTreeDir :: DirTree String
 emptyTreeDir = DirNode "." []
+
+hcEmptyTreeDir :: DirTree HashContents
+hcEmptyTreeDir = DirNode "." []
