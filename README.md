@@ -16,6 +16,12 @@ Assuming that the `hvc` binary is `./hvc`:
 ```bash
 $ ./hvc <your project directory> <command> [arguments]
 ```
+
+If developing, use:
+```bash
+$ stack exec hvc <your project directory> <command> [arguments]
+```
+
 Valid commands are:
 - `init`: initializes the project directory, which is needed to be able to run other `hvc` commands on it.
 - `commit`: stores all of the project's files in a commit, identified by a unique hash and a message, which must be passed as an additional argument.
